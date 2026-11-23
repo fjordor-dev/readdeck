@@ -1,0 +1,10 @@
+{
+  "id": "readdeck",
+  "name": "ReadDeck",
+  "version": "0.4.4",
+  "minAppVersion": "1.5.0",
+  "description": "Visual book library and built-in EPUB reader with preview-before-create, offline mode, custom templates, reading goals, Daily Note mirroring, and CSV import.",
+  "author": "fjordor-dev",
+  "isDesktopOnly": false,
+  "authorUrl": "https://github.com/fjordor-dev"
+}

@@ -1,0 +1,13 @@
+# Personal plugin settings & secrets
+data.json
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Build / Node artifacts
+node_modules/
+npm-debug.log*
