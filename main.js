@@ -567,7 +567,74 @@ class ReadDeckView extends ItemView {
   getDisplayText() { return "ReadDeck"; }
   getIcon() { return "book-open"; }
 
+
+  _initDeckMobileFix() {
+    if (this._deckMobileInit || !this.contentEl) return;
+    this._deckMobileInit = true;
+    this.contentEl.addClass("deck-mobile-content");
+    if (typeof Platform === "undefined" || !Platform.isMobileApp) return;
+
+    const applyBox = () => {
+      const root = this.contentEl?.querySelector(".bs-root, .fs-root");
+      if (!root) return;
+      const ae = document.activeElement;
+      const editing = ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA") && this.contentEl.contains(ae);
+      if (editing) {
+        const rect = this.contentEl.getBoundingClientRect();
+        const padTop = parseFloat(window.getComputedStyle(this.contentEl).paddingTop) || 0;
+        const top = Math.max(0, Math.floor(rect.top + padTop));
+        const vv = window.visualViewport;
+        const vh = vv ? (vv.height + vv.offsetTop) : window.innerHeight;
+        const avail = Math.max(200, Math.floor(vh - top));
+        root.addClass("deck-kb-open");
+        root.style.top = top + "px";
+        root.style.height = avail + "px";
+      } else {
+        root.removeClass("deck-kb-open");
+        root.style.top = "";
+        root.style.height = "";
+      }
+    };
+
+    this.contentEl.addEventListener("focusin", (ev) => {
+      const el = ev.target;
+      if (!el || (el.tagName !== "INPUT" && el.tagName !== "TEXTAREA")) return;
+      applyBox();
+      setTimeout(() => {
+        applyBox();
+        try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {}
+      }, 260);
+    });
+
+    this.contentEl.addEventListener("focusout", () => {
+      setTimeout(applyBox, 180);
+    });
+
+    this.contentEl.addEventListener("keydown", (ev) => {
+      if (ev.key !== "Enter") return;
+      const el = ev.target;
+      if (!el || (!el.classList?.contains("bs-search") && !el.classList?.contains("fs-search"))) return;
+      if (this.activeTab === "library" || this.findMode === "local") {
+        ev.preventDefault();
+        el.blur();
+        this.render();
+      }
+    });
+
+    this.contentEl.addEventListener("change", (ev) => {
+      const el = ev.target;
+      if (!el || (!el.classList?.contains("bs-search") && !el.classList?.contains("fs-search"))) return;
+      if (this.activeTab === "library" || this.findMode === "local") this.render();
+    });
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", applyBox);
+      this.register(() => window.visualViewport?.removeEventListener("resize", applyBox));
+    }
+  }
+
   async onOpen() {
+    this._initDeckMobileFix();
     this.render();
     this._renderTimer = null;
     this.registerEvent(this.app.metadataCache.on("changed", () => {
@@ -575,7 +642,7 @@ class ReadDeckView extends ItemView {
       if (this._renderTimer) window.clearTimeout(this._renderTimer);
       this._renderTimer = window.setTimeout(() => {
         this._renderTimer = null;
-        if (this.containerEl && this.containerEl.isConnected && this.activeTab === "library") this.render();
+        if (this.containerEl && this.containerEl.isConnected && this.activeTab === "library" && !this.contentEl?.contains(document.activeElement)) this.render();
       }, 300);
     }));
   }
@@ -926,7 +993,7 @@ class ReadDeckView extends ItemView {
       cls: "bs-search", attr: { type: "text", placeholder: "Search your library by title or author...", value: this.searchQuery }
     });
     searchInput.oninput = (e) => {
-      this.searchQuery = e.target.value; this.render();
+      this.searchQuery = e.target.value; if (typeof Platform !== "undefined" && Platform.isMobileApp) return; this.render();
       const el = this.containerEl.querySelector(".bs-search");
       if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
     };
@@ -1318,7 +1385,7 @@ class ReadDeckView extends ItemView {
     const controls = main.createDiv({ cls: "bs-controls-row" });
     const inp = controls.createEl("input", { cls: "bs-search", attr: { type: "text", placeholder: "Filter Vault EPUBs, external library, or index...", value: this.ghostQuery } });
     inp.oninput = (e) => {
-      this.ghostQuery = e.target.value; this.render();
+      this.ghostQuery = e.target.value; if (typeof Platform !== "undefined" && Platform.isMobileApp) return; this.render();
       const el = this.containerEl.querySelector(".bs-search");
       if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
     };

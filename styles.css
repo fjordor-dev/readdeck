@@ -126,3 +126,36 @@
   .bs-reader-toolbar .bs-btn, .bs-reader-toolbar .bs-select, .bs-reader-toolbar .bs-timer-badge { padding: 4px 8px; font-size: 0.8em; }
   .bs-page-footer { padding: 8px 10px 76px 10px; }
 }
+
+/* === ANDROID KEYBOARD & LAYOUT FIX V6 (MOBILE ONLY) === */
+body.is-mobile .view-content.deck-mobile-content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-bottom: 0 !important;
+  overflow: hidden !important;
+}
+
+body.is-mobile .bs-root.deck-kb-open,
+body.is-mobile .fs-root.deck-kb-open {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 25 !important;
+}
+
+body.is-mobile .bs-root.deck-kb-open .bs-main,
+body.is-mobile .fs-root.deck-kb-open .fs-main,
+body.is-mobile .bs-root.deck-kb-open .bs-sidebar,
+body.is-mobile .fs-root.deck-kb-open .fs-sidebar {
+  padding-bottom: 36px !important;
+}
+
+body.is-mobile .bs-root input,
+body.is-mobile .bs-root textarea,
+body.is-mobile .bs-root select,
+body.is-mobile .fs-root input,
+body.is-mobile .fs-root textarea,
+body.is-mobile .fs-root select {
+  font-size: 16px !important;
+  min-height: 40px !important;
+}
