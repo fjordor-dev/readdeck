@@ -1,5 +1,16 @@
 const { Plugin, ItemView, PluginSettingTab, Setting, Notice, requestUrl, Platform } = require("obsidian");
 
+function getDesktopNode(mod) {
+  if (typeof Platform === "undefined" || !Platform.isDesktopApp) return null;
+  try {
+    const req = window["require"];
+    return typeof req === "function" ? req(mod) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+
 function stripWikilink(val) {
   if (!val) return "";
   const s = String(val).trim();
@@ -379,7 +390,7 @@ class ReadDeckSettingTab extends PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "ReadDeck" });
+    new Setting(containerEl).setName("ReadDeck").setHeading();
     containerEl.createDiv({ cls: "bs-settings-hint", text: "Click any section below to expand. Folder fields suggest existing folders in your vault." });
 
     const datalistId = "bs-vault-folders-list";
@@ -534,7 +545,7 @@ class ReadDeckSettingTab extends PluginSettingTab {
     });
     new Setting(advBody).setName("Import Goodreads / StoryGraph CSV").setDesc("Existing notes are never overwritten.")
       .addButton(btn => btn.setButtonText("📥 Choose CSV & Import").setCta().onClick(() => {
-        const inp = document.createElement("input"); inp.type = "file"; inp.accept = ".csv,text/csv";
+        const inp = createEl("input", { attr: { type: "file", accept: ".csv,text/csv" } });
         inp.onchange = async e => { const f = e.target.files?.[0]; if (f) await this.plugin.importFromCsv(await f.text()); };
         inp.click();
       }));
@@ -789,7 +800,7 @@ class ReadDeckView extends ItemView {
 
     if (Platform.isDesktopApp) {
       try {
-        const fs = require("fs"); const path = require("path");
+        const fs = getDesktopNode("fs"); const path = getDesktopNode("path");
         const baseDir = this.plugin.settings.externalLibraryPath;
         if (baseDir && fs.existsSync(baseDir)) {
           let scannedDirs = 0; const stack = [baseDir];
@@ -911,7 +922,7 @@ class ReadDeckView extends ItemView {
     if (!book.extern_fil) { new Notice("No external file path linked."); return; }
     const schema = this.plugin.settings.metadataSchema || "sv";
     try {
-      const fs = require("fs"); const path = require("path");
+      const fs = getDesktopNode("fs"); const path = getDesktopNode("path");
       if (!fs.existsSync(book.extern_fil)) { new Notice("External file not found on disk."); return; }
       const targetFolder = this.plugin.settings.vaultEpubFolder.replace(/^\/+|\/+$/g, "");
       await ensureVaultFolder(this.app, targetFolder);
@@ -1222,7 +1233,7 @@ class ReadDeckView extends ItemView {
     }
     if (book.extern_fil && Platform.isDesktopApp) {
       await this.copyEpubToVault(book);
-      const target = this.app.metadataCache.getFirstLinkpathDest(require("path").basename(book.extern_fil), "");
+      const target = this.app.metadataCache.getFirstLinkpathDest(String(book.extern_fil || "").replace(/\\/g, "/").split("/").pop(), "");
       if (target) this.app.workspace.getLeaf("tab").openFile(target);
     }
   }
@@ -1635,7 +1646,7 @@ class EpubReaderView extends ItemView {
     }
     if (!arrayBuffer && book.extern_fil && Platform.isDesktopApp) {
       try {
-        const fs = require("fs");
+        const fs = getDesktopNode("fs");
         const clean = String(book.extern_fil).replace(/^["']+|["']+$/g, "").trim();
         if (fs.existsSync(clean)) {
           const b = fs.readFileSync(clean);
@@ -2008,7 +2019,7 @@ module.exports = class ReadDeckPlugin extends Plugin {
     this.registerView(VIEW_TYPE_EPUB, (leaf) => new EpubReaderView(leaf, this));
     this.addSettingTab(new ReadDeckSettingTab(this.app, this));
     this.addRibbonIcon("book-open", "Open ReadDeck", () => this.activateShelfView());
-    this.addCommand({ id: "open-readdeck", name: "Open ReadDeck", callback: () => this.activateShelfView() });
+    this.addCommand({ id: "open-library", name: "Open book library", callback: () => this.activateShelfView() });
   }
   async loadSettings() { this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()); }
   async saveSettings() { await this.saveData(this.settings); }
