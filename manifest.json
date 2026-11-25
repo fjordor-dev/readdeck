@@ -3,7 +3,7 @@
   "name": "ReadDeck",
   "version": "0.4.9",
   "minAppVersion": "1.5.0",
-  "description": "Visual book library and built-in EPUB reader with preview-before-create, offline mode, custom templates, reading goals, Daily Note mirroring, and CSV import.",
+  "description": "A local-first book library and EPUB reader for Obsidian. Log reading sessions, customize metadata, and keep ordinary Markdown notes.",
   "author": "fjordor-dev",
   "isDesktopOnly": false,
   "authorUrl": "https://github.com/fjordor-dev"
