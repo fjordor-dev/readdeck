@@ -190,6 +190,38 @@ async function findVaultEpubViaAdapter(app, vaultEpubFolder, rawLink) {
   return null;
 }
 
+
+function collectVaultFolders(app) {
+  const out = [];
+  const walk = (folder) => {
+    if (!folder || !Array.isArray(folder.children)) return;
+    for (const child of folder.children) {
+      if (Array.isArray(child.children)) {
+        if (child.path && child.path !== "/") out.push(child.path);
+        walk(child);
+      }
+    }
+  };
+  walk(app.vault.getRoot());
+  return out.sort((a, b) => a.localeCompare(b));
+}
+
+function collectFolderFiles(app, folderPath, exts) {
+  const clean = String(folderPath || "").replace(/^\/+|\/+$/g, "");
+  const start = clean ? app.vault.getAbstractFileByPath(clean) : app.vault.getRoot();
+  if (!start || !Array.isArray(start.children)) return [];
+  const allowed = new Set(exts.map(e => e.toLowerCase()));
+  const out = [];
+  const walk = (folder) => {
+    for (const child of (folder.children || [])) {
+      if (Array.isArray(child.children)) walk(child);
+      else if (child.extension && allowed.has(child.extension.toLowerCase())) out.push(child);
+    }
+  };
+  walk(start);
+  return out;
+}
+
 async function ensureVaultFolder(app, folderPath) {
   const parts = String(folderPath || "").split("/").filter(Boolean);
   let curr = "";
@@ -233,7 +265,7 @@ async function findOrCreateTodayDailyNote(app, settings) {
 
   const baseName = formatted.split("/").pop();
   const folder = (settings.dailyNotesFolder || coreDaily.folder || "").replace(/^\/+|\/+$/g, "");
-  const allMd = app.vault.getMarkdownFiles();
+  const allMd = collectFolderFiles(app, folder, ["md"]);
 
   let file = null;
   if (folder) {
@@ -395,9 +427,7 @@ class ReadDeckSettingTab extends PluginSettingTab {
 
     const datalistId = "bs-vault-folders-list";
     const datalist = containerEl.createEl("datalist", { attr: { id: datalistId } });
-    this.app.vault.getAllLoadedFiles()
-      .filter(f => Array.isArray(f.children) && f.path && f.path !== "/")
-      .map(f => f.path).sort((a, b) => a.localeCompare(b))
+    collectVaultFolders(this.app)
       .forEach(p => datalist.createEl("option", { attr: { value: p } }));
 
     // 1. CORE SETUP
@@ -667,7 +697,7 @@ class ReadDeckView extends ItemView {
     const pm = parsePropertyMap(this.plugin.settings.propertyMapJson);
     const booksFolder = (this.plugin.settings.booksFolder || "").replace(/^\/+|\/+$/g, "");
     const books = [];
-    for (const file of this.app.vault.getMarkdownFiles()) {
+    for (const file of collectFolderFiles(this.app, booksFolder, ["md"])) {
       const pLow = file.path.toLowerCase();
       if (pLow.includes("_mallar/") || pLow.includes("mallar/") || pLow.includes("templates/") || file.basename.toLowerCase().includes("bokmall")) continue;
       const fm = this.app.metadataCache.getFileCache(file)?.frontmatter;
@@ -755,7 +785,7 @@ class ReadDeckView extends ItemView {
     const existingTitles = new Set(existingBooks.map(b => b.titel.toLowerCase()));
     const byKey = new Map();
 
-    for (const f of this.app.vault.getFiles()) {
+    for (const f of collectFolderFiles(this.app, this.plugin.settings.vaultEpubFolder, ["epub", "pdf"])) {
       const extLow = f.extension.toLowerCase();
       if (extLow !== "epub" && extLow !== "pdf") continue;
       const ext = extLow.toUpperCase();
@@ -839,7 +869,7 @@ class ReadDeckView extends ItemView {
 
     const indexFolder = (this.plugin.settings.indexFolder || "").replace(/^\/+|\/+$/g, "");
     if (indexFolder) {
-      const mdFiles = this.app.vault.getMarkdownFiles().filter(
+      const mdFiles = collectFolderFiles(this.app, indexFolder, ["md"]).filter(
         f => f.path.startsWith(indexFolder) && (f.basename.startsWith("Bokindex") || f.basename.includes("Fysiska Bokhyllan") || f.basename.includes("Book Index"))
       );
       for (const f of mdFiles) {
@@ -1707,9 +1737,10 @@ class EpubReaderView extends ItemView {
     this._contentArea.style.padding = `14px ${sidePad}px`;
     this._contentArea.style.columnWidth = `${colW}px`;
     this._contentArea.style.columnGap = `${gap}px`;
+    this._contentArea.style.columnFill = "auto";
 
     const maxImgH = Math.max(140, vpH - 48);
-    this._contentArea.querySelectorAll("img").forEach(img => { img.style.maxHeight = `${maxImgH}px`; });
+    this._contentArea.querySelectorAll("img").forEach(img => { img.style.maxHeight = `${maxImgH}px`; img.style.breakInside = "avoid"; });
 
     let total = 1;
     if (this._pageEndSentinel) {

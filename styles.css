@@ -75,9 +75,11 @@
 .bs-accordion[open] > summary { border-bottom: 1px solid var(--background-modifier-border); }
 .bs-accordion-body { padding: 6px 16px 12px 16px; background: var(--background-primary); }
 .bs-accordion-body .setting-item:first-child { border-top: none; }
-.bs-wide-input { width: 285px !important; max-width: 100%; }
+.bs-accordion-body .setting-item-control input.bs-wide-input,
+.bs-accordion-body .setting-item-control textarea.bs-wide-input { width: 285px; max-width: 100%; }
 @media (max-width: 768px) {
-  .bs-wide-input { width: 100% !important; }
+  .bs-accordion-body .setting-item-control input.bs-wide-input,
+  .bs-accordion-body .setting-item-control textarea.bs-wide-input { width: 100%; }
   .bs-topbar { padding: 10px 12px; gap: 8px; flex-wrap: wrap; }
   .bs-brand { font-size: 1.08em; }
   .bs-main { padding: 14px 12px 96px 12px; }
@@ -87,7 +89,6 @@
   .bs-sidebar { position: absolute; inset: 0; width: 100%; height: 100%; border-left: none; z-index: 30; padding: 14px 14px 96px 14px; box-sizing: border-box; }
   .bs-preview-top { flex-direction: column; }
 }
-
 
 .bs-progress-bar { position: absolute; bottom: 0; left: 0; height: 4px; background: var(--interactive-accent); }
 .bs-reader-root { display: flex; flex-direction: column; height: 100%; transition: background-color 0.2s ease, color 0.2s ease; }
@@ -99,26 +100,28 @@
 .bs-timer-badge { padding: 5px 10px; border-radius: 6px; background: var(--background-primary); border: 1px solid var(--background-modifier-border); font-variant-numeric: tabular-nums; font-size: 0.85em; font-weight: 600; color: var(--text-accent); }
 .bs-reader-scroll { flex: 1; overflow-y: auto; width: 100%; }
 .bs-reader-content { padding: 36px 28px 80px 28px; margin: 0 auto; user-select: text; }
-.bs-reader-content a { color: inherit !important; text-decoration: none !important; cursor: text !important; }
-.bs-reader-content h1, .bs-reader-content h2, .bs-reader-content h3 { color: inherit !important; margin-top: 1.2em; margin-bottom: 0.6em; }
+.bs-reader-root .bs-reader-content a { color: inherit; text-decoration: none; cursor: text; }
+.bs-reader-root .bs-reader-content h1,
+.bs-reader-root .bs-reader-content h2,
+.bs-reader-root .bs-reader-content h3 { color: inherit; margin-top: 1.2em; margin-bottom: 0.6em; }
 .bs-reader-content img { max-width: 100%; height: auto; }
 @media (max-width: 768px) {
   .bs-reader-toolbar { padding: 8px 10px; gap: 6px; }
   .bs-reader-content { padding: 18px 16px 96px 16px; }
 }
 
-/* Paginated EPUB Reader (v0.4.4) */
-.bs-reader-root.bs-toolbar-hidden .bs-reader-toolbar { display: none !important; }
+/* Paginated EPUB Reader */
+.bs-reader-root.bs-toolbar-hidden > .bs-reader-toolbar { display: none; }
 .bs-page-viewport { flex: 1; width: 100%; overflow: hidden; position: relative; touch-action: none; user-select: text; -webkit-user-select: text; }
 .bs-page-track { height: 100%; will-change: transform; transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1); }
-.bs-reader-content.paged { box-sizing: border-box; height: 100%; max-width: none !important; margin: 0 !important; column-fill: auto; overflow: visible; }
+.bs-reader-root .bs-reader-content.paged { box-sizing: border-box; height: 100%; max-width: none; margin: 0; overflow: visible; }
 .bs-reader-content.paged p { margin-top: 0; margin-bottom: 0.85em; orphans: 2; widows: 2; }
-.bs-reader-content.paged h1, .bs-reader-content.paged h2, .bs-reader-content.paged h3 { break-after: avoid; page-break-after: avoid; margin-top: 0.35em; }
-.bs-reader-content.paged img { max-width: 100%; object-fit: contain; break-inside: avoid; display: block; margin: 8px auto; }
+.bs-reader-content.paged h1, .bs-reader-content.paged h2, .bs-reader-content.paged h3 { margin-top: 0.35em; }
+.bs-reader-content.paged img { max-width: 100%; object-fit: contain; display: block; margin: 8px auto; }
 .bs-page-end { display: inline-block; width: 1px; height: 1px; }
 .bs-page-footer { display: flex; justify-content: space-between; align-items: center; padding: 7px 14px; background: var(--background-secondary); border-top: 1px solid var(--background-modifier-border); font-size: 0.82em; color: var(--text-muted); gap: 6px; user-select: none; flex-shrink: 0; z-index: 5; }
 .bs-page-footer-info { font-variant-numeric: tabular-nums; text-align: center; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bs-btn-icon { padding-left: 9px !important; padding-right: 9px !important; }
+.bs-reader-root .bs-btn.bs-btn-icon { padding-left: 9px; padding-right: 9px; }
 .bs-scroll-restore-btn { display: none; position: fixed; right: 16px; bottom: 84px; z-index: 20; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); }
 .bs-reader-root.bs-toolbar-hidden .bs-scroll-restore-btn { display: inline-flex; }
 @media (max-width: 768px) {
@@ -127,35 +130,35 @@
   .bs-page-footer { padding: 8px 10px 76px 10px; }
 }
 
-/* === ANDROID KEYBOARD & LAYOUT FIX V6 (MOBILE ONLY) === */
-body.is-mobile .view-content.deck-mobile-content {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  padding-bottom: 0 !important;
-  overflow: hidden !important;
+/* === ANDROID KEYBOARD & LAYOUT FIX (MOBILE ONLY) === */
+body.is-mobile .workspace-leaf-content .view-content.deck-mobile-content {
+  padding-left: 0;
+  padding-right: 0;
+  padding-bottom: 0;
+  overflow: hidden;
 }
 
-body.is-mobile .bs-root.deck-kb-open,
-body.is-mobile .fs-root.deck-kb-open {
-  position: fixed !important;
-  left: 0 !important;
-  right: 0 !important;
-  z-index: 25 !important;
+body.is-mobile .view-content.deck-mobile-content .bs-root.deck-kb-open,
+body.is-mobile .view-content.deck-mobile-content .fs-root.deck-kb-open {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 25;
 }
 
-body.is-mobile .bs-root.deck-kb-open .bs-main,
-body.is-mobile .fs-root.deck-kb-open .fs-main,
-body.is-mobile .bs-root.deck-kb-open .bs-sidebar,
-body.is-mobile .fs-root.deck-kb-open .fs-sidebar {
-  padding-bottom: 36px !important;
+body.is-mobile .view-content.deck-mobile-content .bs-root.deck-kb-open .bs-main,
+body.is-mobile .view-content.deck-mobile-content .fs-root.deck-kb-open .fs-main,
+body.is-mobile .view-content.deck-mobile-content .bs-root.deck-kb-open .bs-sidebar,
+body.is-mobile .view-content.deck-mobile-content .fs-root.deck-kb-open .fs-sidebar {
+  padding-bottom: 36px;
 }
 
-body.is-mobile .bs-root input,
-body.is-mobile .bs-root textarea,
-body.is-mobile .bs-root select,
-body.is-mobile .fs-root input,
-body.is-mobile .fs-root textarea,
-body.is-mobile .fs-root select {
-  font-size: 16px !important;
-  min-height: 40px !important;
+body.is-mobile .view-content.deck-mobile-content .bs-root input,
+body.is-mobile .view-content.deck-mobile-content .bs-root textarea,
+body.is-mobile .view-content.deck-mobile-content .bs-root select,
+body.is-mobile .view-content.deck-mobile-content .fs-root input,
+body.is-mobile .view-content.deck-mobile-content .fs-root textarea,
+body.is-mobile .view-content.deck-mobile-content .fs-root select {
+  font-size: 16px;
+  min-height: 40px;
 }
