@@ -1,5 +1,3 @@
-mkdir -p .github/workflows
-cat << 'EOF' > .github/workflows/release.yml
 name: Release ReadDeck
 
 on:
@@ -37,4 +35,3 @@ jobs:
             styles.css \
             --title "ReadDeck $TAG" \
             --generate-notes
-EOF
